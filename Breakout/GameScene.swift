@@ -91,7 +91,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     
     func makePaddle() {
         paddle.removeFromParent() // remove paddle, if it exists
-        paddle = SKSpriteNode(color: .white, size: CGSize(width: frame.width, height: 20))
+        paddle = SKSpriteNode(color: .white, size: CGSize(width: 150, height: 20))
         paddle.position = CGPoint(x: frame.midX, y: frame.minY + 125)
         paddle.name = "paddle"
         paddle.physicsBody = SKPhysicsBody(rectangleOf: paddle.size)
