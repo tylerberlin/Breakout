@@ -7,8 +7,11 @@
 
 import SpriteKit
 import GameplayKit
+import AVFoundation
+
 class GameScene: SKScene, SKPhysicsContactDelegate {
-    var ball = SKShapeNode()
+    var backgroundMusicPlayer: AVAudioPlayer?
+    var ball: SKSpriteNode!
     var paddle = SKSpriteNode()
     var bricks = [SKSpriteNode()]
     var loseZone = SKSpriteNode()
@@ -63,11 +66,12 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     }
     
     func makeBall() {
-        ball.removeFromParent() // remove ball, if it exists
-        ball = SKShapeNode(circleOfRadius: 10)
+        ball?.removeFromParent() // remove ball, if it exists
+        let astroidTexture = SKTexture(imageNamed: "asteroid") // loads the astroid texture
+        // makes the ball as SKSpriteNode with asteroid texture
+        ball = SKSpriteNode(texture: astroidTexture)
+        ball.size = CGSize(width: 40, height: 40)
         ball.position = CGPoint(x: frame.midX, y: frame.midY)
-        ball.strokeColor = .black
-        ball.fillColor = .yellow
         ball.name = "ball"
         // physics shape matches ball image
         ball.physicsBody = SKPhysicsBody(circleOfRadius: 10)
@@ -83,10 +87,11 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         ball.physicsBody?.restitution = 1
         // does not slow down over time
         ball.physicsBody?.linearDamping = 0
-        ball.physicsBody?.contactTestBitMask =
-        (ball.physicsBody?.collisionBitMask)!
-        
-        addChild(ball) // add ball object to the view
+        ball.physicsBody?.contactTestBitMask = (ball.physicsBody?.collisionBitMask)!
+        //adds rotation animation to make it look like a spinning astroid
+        let rotateAction = SKAction.rotate(byAngle: CGFloat(Double.pi), duration: 1)
+        ball.run(SKAction.repeatForever(rotateAction))
+        addChild(ball)
     }
     
     func makePaddle() {
@@ -227,27 +232,42 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
                 gameOver(winner: false)
             }
         }
+        
+        func gameOver(winner: Bool) {
+            playingGame = false
+            playLabel.alpha = 1
+            resetGame()
+            if winner {
+                playLabel.text = "You win! Tap to play again"
+            }
+            else {
+                playLabel.text = "You lose! Tap to play again"
+            }
+        }
+        
+        func playBackgroundMusic() {
+            if let url = Bundle.main.url(forResource: "retro-wave-style-track-59892", withExtension: "mp3") {
+                backgroundMusicPlayer = try? AVAudioPlayer(contentsOf: url)
+                backgroundMusicPlayer?.numberOfLoops = -1
+                backgroundMusicPlayer?.volume = 0.3
+                backgroundMusicPlayer?.play()
+            } else {
+                print("Music file not found.")
+            }
+        }
+        
+        func stopBackgroundMusic() {
+            backgroundMusicPlayer?.stop()
+        }
     }
-    func gameOver(winner: Bool) {
-        playingGame = false
-        playLabel.alpha = 1
-        resetGame()
-        if winner {
-            playLabel.text = "You win! Tap to play again"
-        }
-        else {
-            playLabel.text = "You lose! Tap to play again"
-        }
-    }
-    
-    override func update(_ currentTime: TimeInterval) {
-        if abs(ball.physicsBody!.velocity.dx) < 100 {
-            // ball has stalled in x direction, so kick it randomly horizontally
-            ball.physicsBody?.applyImpulse(CGVector(dx: Int.random(in: -3...3), dy: 0))
-        }
-        if abs(ball.physicsBody!.velocity.dy) < 100 {
-            // ball has stalled in y direction, so kick it randomly vertically
-            ball.physicsBody?.applyImpulse(CGVector(dx: 0, dy: Int.random(in:-3...3)))
+        override func update(_ currentTime: TimeInterval) {
+            if abs(ball.physicsBody!.velocity.dx) < 100 {
+                // ball has stalled in x direction, so kick it randomly horizontally
+                ball.physicsBody?.applyImpulse(CGVector(dx: Int.random(in: -3...3), dy: 0))
+            }
+            if abs(ball.physicsBody!.velocity.dy) < 100 {
+                // ball has stalled in y direction, so kick it randomly vertically
+                ball.physicsBody?.applyImpulse(CGVector(dx: 0, dy: Int.random(in:-3...3)))
+            }
         }
     }
-}
