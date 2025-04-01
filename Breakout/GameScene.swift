@@ -177,7 +177,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
                         lives = 3
                         updateLabels()
                         kickBall()
-                        
+                        playBackgroundMusic()
                     }
                 }
             }
@@ -192,12 +192,10 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             }
         }
     }
-    
     func didBegin(_ contact: SKPhysicsContact) {
         // ask each brick, "Is it you?"
         for brick in bricks {
-            if contact.bodyA.node == brick ||
-                contact.bodyB.node == brick {
+            if contact.bodyA.node == brick || contact.bodyB.node == brick {
                 score += 1
                 // increase ball velocity by 2%
                 ball.physicsBody!.velocity.dx *= CGFloat(1.02)
@@ -232,42 +230,36 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
                 gameOver(winner: false)
             }
         }
-        
-        func gameOver(winner: Bool) {
-            playingGame = false
-            playLabel.alpha = 1
-            resetGame()
-            if winner {
-                playLabel.text = "You win! Tap to play again"
-            }
-            else {
-                playLabel.text = "You lose! Tap to play again"
-            }
+    }
+    
+    // handles win/loss screen + music logic
+    func gameOver(winner: Bool) {
+        playingGame = false
+        playLabel.alpha = 1
+        resetGame()
+        if winner {
+            playLabel.text = "You win! Tap to play again"
         }
-        
-        func playBackgroundMusic() {
-            if let url = Bundle.main.url(forResource: "retro-wave-style-track-59892", withExtension: "mp3") {
-                backgroundMusicPlayer = try? AVAudioPlayer(contentsOf: url)
-                backgroundMusicPlayer?.numberOfLoops = -1
-                backgroundMusicPlayer?.volume = 0.3
-                backgroundMusicPlayer?.play()
-            } else {
-                print("Music file not found.")
-            }
-        }
-        
-        func stopBackgroundMusic() {
-            backgroundMusicPlayer?.stop()
+        else {
+            playLabel.text = "You lose! Tap to play again"
+            stopBackgroundMusic()
         }
     }
-        override func update(_ currentTime: TimeInterval) {
-            if abs(ball.physicsBody!.velocity.dx) < 100 {
-                // ball has stalled in x direction, so kick it randomly horizontally
-                ball.physicsBody?.applyImpulse(CGVector(dx: Int.random(in: -3...3), dy: 0))
-            }
-            if abs(ball.physicsBody!.velocity.dy) < 100 {
-                // ball has stalled in y direction, so kick it randomly vertically
-                ball.physicsBody?.applyImpulse(CGVector(dx: 0, dy: Int.random(in:-3...3)))
-            }
+    
+    // starts the background music
+    func playBackgroundMusic() {
+        if let url = Bundle.main.url(forResource: "retro-wave-style-track-59892", withExtension: "mp3") {
+            backgroundMusicPlayer = try? AVAudioPlayer(contentsOf: url)
+            backgroundMusicPlayer?.numberOfLoops = -1
+            backgroundMusicPlayer?.volume = 0.3
+            backgroundMusicPlayer?.play()
+        } else {
+            print("Music file not found.")
         }
     }
+    
+    // stops the background music
+    func stopBackgroundMusic() {
+        backgroundMusicPlayer?.stop()
+    }
+}
