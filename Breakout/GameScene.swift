@@ -232,7 +232,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         }
     }
     
-    // handles win/loss screen + music logic
+    // determines if the game is over and if they won or lost
     func gameOver(winner: Bool) {
         playingGame = false
         playLabel.alpha = 1
